@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
 
 const App = () => {
   const navigate = useNavigate();
-  const createMeeting = () => {
-    const roomId = uuidv4();
-    navigate(`/:${roomId}`);
+  const createMeetingId = () => {
+    axios.get("http://localhost:3000/room-id").then((response) => {
+      navigate(`${response.data.roomId}`);
+    });
   };
 
   return (
@@ -19,7 +20,7 @@ const App = () => {
         />
         <button
           className="text-white bg-blue-500 border-2 border-blue-500 rounded-md p-3  "
-          onClick={createMeeting}
+          onClick={createMeetingId}
         >
           Join
         </button>
