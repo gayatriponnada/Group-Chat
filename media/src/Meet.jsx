@@ -1,10 +1,17 @@
 import usePeer from "./hooks/usePeer";
 import useMedia from "./hooks/useMedia";
 import Player from "./components/Player";
-import useSocket from "./hooks/useSocket";
+import { SocketProvider } from "./context/socket";
+
+const MeetPage = () => {
+  return (
+    <SocketProvider>
+      <Meet />
+    </SocketProvider>
+  );
+};
 
 const Meet = () => {
-  useSocket();
   const { peerId } = usePeer();
   const { media } = useMedia();
   return (
@@ -13,5 +20,4 @@ const Meet = () => {
     </div>
   );
 };
-
-export default Meet;
+export default MeetPage;
