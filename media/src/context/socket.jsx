@@ -12,7 +12,6 @@ export const SocketProvider = ({ children }) => {
       console.log("user connected");
       setSocket(socket);
     });
-    console.log("useEffect is running");
   }, []);
   return (
     <SocketContext.Provider value={{ socket }}>

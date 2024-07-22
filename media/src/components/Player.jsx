@@ -1,8 +1,9 @@
 import ReactPlayer from "react-player";
-const Player = ({ playerId, url, muted, playing }) => {
+// eslint-disable-next-line react/prop-types
+const Player = ({ url, muted, playing }) => {
   return (
     <div>
-      <ReactPlayer key={playerId} url={url} muted={muted} playing={playing} />
+      <ReactPlayer url={url} muted={muted} playing={playing} />
     </div>
   );
 };
