@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.active-player video {
+  position: relative;
+  left: 0;
+  top: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.inactive-player video {
+  position: relative;
+  top: 0;
+  right: 0;
+  width: 10%;
+  height: 10%;
+}
