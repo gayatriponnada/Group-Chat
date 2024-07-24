@@ -3,12 +3,16 @@
 @tailwind utilities;
 
 .active-player video {
+  direction: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
-  left: 0;
-  top: 0;
-  inset: 0;
+  /* left: 10px;
+  top: 10px; */
+  padding: 2rem;
   width: 100%;
   height: 100%;
+  border-radius: 1rem;
   object-fit: cover;
 }
 .inactive-player video {
@@ -17,4 +21,6 @@
   right: 0;
   width: 10%;
   height: 10%;
+  border-radius: 25%;
+  padding: 2rem;
 }
