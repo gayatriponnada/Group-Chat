@@ -18,7 +18,7 @@ const usePlayer = (peerId) => {
       copy[peerId].muted = !copy[peerId].muted;
       return { ...copy };
     });
-    socket.emit("room-id", roomId, peerId);
+    socket.emit("toggle-video", roomId, peerId);
   };
   const toggleVideo = () => {
     console.log("toggled the video button");
