@@ -125,7 +125,7 @@ const Meet = () => {
           />
         )}
       </div>
-      <div className="absolute w-[300px] top-0 right-0 flex flex-col items-start justify-start rounded-md">
+      <div className="absolute w-[300px] top-0 right-0 flex flex-col items-center justify-center rounded-md">
         {Object.keys(nonHighlightedPlayers).map((playerId) => {
           const { url, muted, playing } = nonHighlightedPlayers[playerId];
           return (

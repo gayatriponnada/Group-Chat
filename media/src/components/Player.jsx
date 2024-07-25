@@ -17,7 +17,11 @@ const Player = ({ url, muted, playing, Active }) => {
           height={Active ? "80vh" : "auto"}
         />
       ) : (
-        <UserRoundX />
+        <UserRoundX
+          className=" size-[6rem] bg-slate-600 text-white font-extralight rounded-md p-5 "
+          width={Active ? "80vw" : "auto"}
+          height={Active ? "80vh" : "auto"}
+        />
       )}
     </div>
   );
