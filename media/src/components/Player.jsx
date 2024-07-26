@@ -1,28 +1,46 @@
 import ReactPlayer from "react-player";
-import { UserRoundX } from "lucide-react";
-
+import { UserRoundX, Mic, MicOff } from "lucide-react";
 // eslint-disable-next-line react/prop-types
 const Player = ({ url, muted, playing, Active }) => {
   return (
-    <div
-      className={`  ${Active ? "active-player" : "inactive-player"}
-      `}
-    >
+    <div className="relative">
       {playing ? (
-        <ReactPlayer
-          url={url}
-          muted={muted}
-          playing={playing}
-          width={Active ? "80vw" : "auto"}
-          height={Active ? "80vh" : "auto"}
-        />
+        <div
+          className={`  ${Active ? "active-player" : "inactive-player"}
+      `}
+        >
+          <ReactPlayer
+            url={url}
+            muted={muted}
+            playing={playing}
+            width={Active ? "80vw" : "auto"}
+            height={Active ? "80vh" : "auto"}
+          />
+        </div>
       ) : (
-        <UserRoundX
-          className=" size-[6rem] bg-slate-600 text-white font-extralight rounded-md p-5 "
-          width={Active ? "80vw" : "auto"}
-          height={Active ? "80vh" : "auto"}
-        />
+        <div
+          className={`  ${
+            Active ? "usericon-active-player" : "usericon-inactive-player"
+          }
+      `}
+        >
+          <UserRoundX
+            className="  bg-slate-600 text-white p-[2rem]  rounded-md stroke-[0.1px]  "
+            width={Active ? "70vw" : "auto"}
+            height={Active ? "70vh" : "auto"}
+          />
+        </div>
       )}
+      <div className="mute-icon">
+        {!Active ? (
+          muted ? (
+            <MicOff className="text-white" />
+          ) : (
+            <Mic className="text-white" />
+          )
+        ) : undefined}
+      </div>
+      <div>{}</div>
     </div>
   );
 };

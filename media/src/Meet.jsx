@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SocketProvider, useSocket } from "./context/socket";
 import usePeer from "./hooks/usePeer";
 import useMedia from "./hooks/useMedia";
@@ -6,6 +6,7 @@ import usePlayer from "./hooks/usePlayer";
 import Player from "./components/Player";
 import Button from "./components/Button";
 import { cloneDeep } from "lodash";
+import CopyUrl from "./components/Copy";
 const MeetPage = () => {
   return (
     <SocketProvider>
@@ -25,7 +26,11 @@ const Meet = () => {
     highlightedPlayers,
     toggleAudio,
     toggleVideo,
-  } = usePlayer(peerId);
+    leaveRoom,
+    visibleAudioOn,
+    visibleAudioOff,
+  } = usePlayer(peerId, peer);
+  const [users, setUsers] = useState([]);
   useEffect(() => {
     if (!mediaStream || !socket || !peer) return;
     socket.on("userConnected", (newuser) => {
@@ -40,6 +45,10 @@ const Meet = () => {
             muted: true,
             playing: true,
           },
+        }));
+        setUsers((prev) => ({
+          ...prev,
+          [newuser]: call,
         }));
       });
     });
@@ -62,6 +71,10 @@ const Meet = () => {
             muted: true,
             playing: true,
           },
+        }));
+        setUsers((prev) => ({
+          ...prev,
+          [callerId]: call,
         }));
       });
     });
@@ -107,14 +120,22 @@ const Meet = () => {
         return { ...copy };
       });
     });
+    socket.on("leave-room", (userId) => {
+      console.log(`user ${userId} is leaving the room`);
+      users[userId]?.close();
+      const playersCopy = cloneDeep(players);
+      delete playersCopy[userId];
+      setPlayers(playersCopy);
+    });
     return () => {
       socket.off("toggle-audio");
       socket.off("toggle-video");
+      socket.off("leave-room");
     };
-  }, [setPlayers, socket]);
+  }, [players, setPlayers, socket, users]);
 
   return (
-    <main className="relative">
+    <main className="relative flex gap-4 flex-col">
       <div className="w-[80vw] h-[80vh]">
         {highlightedPlayers && (
           <Player
@@ -125,7 +146,7 @@ const Meet = () => {
           />
         )}
       </div>
-      <div className="absolute w-[300px] top-0 right-0 flex flex-col items-center justify-center rounded-md">
+      <div className="absolute w-[300px] top-0 right-0 flex flex-col items-center justify-center rounded-sm">
         {Object.keys(nonHighlightedPlayers).map((playerId) => {
           const { url, muted, playing } = nonHighlightedPlayers[playerId];
           return (
@@ -139,12 +160,16 @@ const Meet = () => {
           );
         })}
       </div>
+      <CopyUrl />
       <div>
         <Button
           muted={highlightedPlayers?.muted}
           playing={highlightedPlayers?.playing}
           toggleAudio={toggleAudio}
           toggleVideo={toggleVideo}
+          leaveRoom={leaveRoom}
+          visibleAudioOn={visibleAudioOn}
+          visibleAudioOff={visibleAudioOff}
         />
       </div>
     </main>
