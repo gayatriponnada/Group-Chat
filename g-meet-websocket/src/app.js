@@ -12,12 +12,29 @@ app.use(cors());
 const port = 3000;
 io.on("connection", (socket) => {
   console.log("server connected");
-  socket.on("room-id", (url) => {
+  socket.on("room-id", (url, newuserId) => {
     socket.join(url);
     console.log("room joined", url);
+    console.log("peerid", newuserId);
+    socket.to(url).emit("userConnected", newuserId);
+
     socket.on("message-sent", (message) => {
       socket.to(url).emit("message-received", message);
     });
+  });
+  socket.on("toggle-audio", (url, userId) => {
+    console.log("room joined:audio", url);
+    console.log("peerid:audio", userId);
+    socket.join(url);
+    socket.to(url).emit("toggle-audio", userId);
+  });
+  socket.on("toggle-video", (url, userId) => {
+    socket.join(url);
+    socket.to(url).emit("toggle-video", userId);
+  });
+  socket.on("leave-room", (url, userId) => {
+    socket.join(url);
+    socket.to(url).emit("leave-room", userId);
   });
 });
 
