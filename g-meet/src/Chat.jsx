@@ -36,9 +36,9 @@ const Chat = () => {
   return (
     <>
       <div className="bg-red-500 h-1/2">
-        {messages.map(({ input, time }) => {
+        {messages.map(({ input, time }, index) => {
           return (
-            <div key={time} className="bg-red-300">
+            <div key={index} className="bg-red-300">
               <div>{input}</div>
               <div>{time}</div>
             </div>
