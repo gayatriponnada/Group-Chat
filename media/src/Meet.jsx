@@ -4,7 +4,7 @@ import usePeer from "./hooks/usePeer";
 import useMedia from "./hooks/useMedia";
 import usePlayer from "./hooks/usePlayer";
 import Player from "./components/Player";
-import Button from "./components/Button";
+import Footer from "./components/Footer";
 import { cloneDeep } from "lodash";
 import CopyUrl from "./components/Copy";
 const MeetPage = () => {
@@ -31,6 +31,17 @@ const Meet = () => {
     visibleAudioOff,
   } = usePlayer(peerId, peer);
   const [users, setUsers] = useState([]);
+  const [chat, setChat] = useState(false);
+  const [MeetingDetails, setMeetingDetails] = useState(false);
+
+  const showChat = () => {
+    setChat(!chat);
+    console.log("clicked");
+    console.log(chat);
+  };
+  const showMeeting = () => {
+    setMeetingDetails(!MeetingDetails);
+  };
   useEffect(() => {
     if (!mediaStream || !socket || !peer) return;
     socket.on("userConnected", (newuser) => {
@@ -162,7 +173,7 @@ const Meet = () => {
       </div>
       <CopyUrl />
       <div>
-        <Button
+        <Footer
           muted={highlightedPlayers?.muted}
           playing={highlightedPlayers?.playing}
           toggleAudio={toggleAudio}
@@ -170,6 +181,10 @@ const Meet = () => {
           leaveRoom={leaveRoom}
           visibleAudioOn={visibleAudioOn}
           visibleAudioOff={visibleAudioOff}
+          showChat={showChat}
+          chat={chat}
+          showMeeting={showMeeting}
+          MeetingDetails={MeetingDetails}
         />
       </div>
     </main>
