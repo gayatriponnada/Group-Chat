@@ -59,6 +59,7 @@ const Meet = () => {
             playing: true,
           },
         }));
+        console.log(screenShare);
         if (screenShare) {
           const call = peer.call(newuser, screenShare);
           call?.on("stream", (incomingStream) => {
@@ -99,8 +100,8 @@ const Meet = () => {
             playing: true,
           },
         }));
-        if (!screenShare) return;
-        call.answer(screenShare);
+        console.log(screenShare);
+        if (screenShare) call.answer(screenShare);
         call.on("stream", (incomingStream) => {
           console.log(`incoming screen sharing from ${callerId}`);
           setPlayers((prev) => ({
