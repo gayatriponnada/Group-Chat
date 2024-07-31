@@ -6,6 +6,7 @@ import {
   Phone,
   MessageSquareText,
   Info,
+  ScreenShare,
 } from "lucide-react";
 import Chat from "./Chat";
 import { useParams } from "react-router-dom";
@@ -14,9 +15,11 @@ import MeetingInfo from "./Meeting-info";
 const Footer = ({
   muted,
   playing,
+  screenurl,
   toggleAudio,
   toggleVideo,
   leaveRoom,
+  screenSharing,
   visibleAudioOn,
   visibleAudioOff,
   showChat,
@@ -71,6 +74,7 @@ const Footer = ({
             onClick={toggleVideo}
           />
         )}
+        <ScreenShare onClick={screenSharing} />
         <Phone
           className="rounded-2xl bg-red-500 text-white p-2 size-[35px] cursor-pointer "
           onClick={leaveRoom}

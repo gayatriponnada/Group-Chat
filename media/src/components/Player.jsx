@@ -1,7 +1,7 @@
 import ReactPlayer from "react-player";
-import { UserRoundX, Mic, MicOff } from "lucide-react";
+import { UserRound, Mic, MicOff } from "lucide-react";
 // eslint-disable-next-line react/prop-types
-const Player = ({ url, muted, playing, Active }) => {
+const Player = ({ url, screenurl, muted, playing, Active }) => {
   return (
     <div className="relative">
       {playing ? (
@@ -11,6 +11,7 @@ const Player = ({ url, muted, playing, Active }) => {
         >
           <ReactPlayer
             url={url}
+            screenurl={screenurl}
             muted={muted}
             playing={playing}
             width={Active ? "80vw" : "auto"}
@@ -24,8 +25,8 @@ const Player = ({ url, muted, playing, Active }) => {
           }
       `}
         >
-          <UserRoundX
-            className="  bg-slate-600 text-white p-[2rem]  rounded-md stroke-[0.1px]  "
+          <UserRound
+            className="  bg-slate-600 text-white p-[2rem] rounded-md stroke-[0.1px]  "
             width={Active ? "70vw" : "auto"}
             height={Active ? "70vh" : "auto"}
           />
@@ -40,7 +41,6 @@ const Player = ({ url, muted, playing, Active }) => {
           )
         ) : undefined}
       </div>
-      <div>{}</div>
     </div>
   );
 };

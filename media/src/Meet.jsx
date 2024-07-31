@@ -27,6 +27,8 @@ const Meet = () => {
     toggleAudio,
     toggleVideo,
     leaveRoom,
+    screenSharing,
+    screenShare,
     visibleAudioOn,
     visibleAudioOff,
   } = usePlayer(peerId, peer);
@@ -57,6 +59,20 @@ const Meet = () => {
             playing: true,
           },
         }));
+        if (screenShare) {
+          const call = peer.call(newuser, screenShare);
+          call?.on("stream", (incomingStream) => {
+            console.log(`incoming screen sharing from ${newuser}`);
+            setPlayers((prev) => ({
+              ...prev,
+              [newuser]: {
+                screenurl: incomingStream,
+                muted: true,
+                playing: true,
+              },
+            }));
+          });
+        }
         setUsers((prev) => ({
           ...prev,
           [newuser]: call,
@@ -66,7 +82,7 @@ const Meet = () => {
     return () => {
       socket.off("userConnected");
     };
-  }, [mediaStream, socket, peer, setPlayers]);
+  }, [mediaStream, socket, peer, setPlayers, screenShare]);
 
   useEffect(() => {
     if (!mediaStream || !peer) return;
@@ -83,30 +99,42 @@ const Meet = () => {
             playing: true,
           },
         }));
-        setUsers((prev) => ({
-          ...prev,
-          [callerId]: call,
-        }));
+        if (!screenShare) return;
+        call.answer(screenShare);
+        call.on("stream", (incomingStream) => {
+          console.log(`incoming screen sharing from ${callerId}`);
+          setPlayers((prev) => ({
+            ...prev,
+            [callerId]: {
+              screenurl: incomingStream,
+              muted: true,
+              playing: true,
+            },
+          }));
+          setUsers((prev) => ({
+            ...prev,
+            [callerId]: call,
+          }));
+        });
       });
     });
-  }, [mediaStream, peer, setPlayers]);
+  }, [mediaStream, peer, screenShare, setPlayers]);
 
   useEffect(() => {
     if (!mediaStream || !peerId) return;
-    console.log(`Effect is running${peerId}`);
     setPlayers((prev) => ({
       ...prev,
       [peerId]: {
+        screenurl: screenShare,
         url: mediaStream,
         muted: true,
         playing: true,
       },
     }));
-  }, [mediaStream, peerId, setPlayers]);
+  }, [mediaStream, peerId, screenShare, setPlayers]);
 
   useEffect(() => {
     if (!socket) return;
-    console.log("useEffect is running in useplayer");
     socket.on("toggle-audio", (userId) => {
       console.log(`toggled audio ${userId}`);
       setPlayers((prev) => {
@@ -131,6 +159,20 @@ const Meet = () => {
         return { ...copy };
       });
     });
+    socket.on("screen-share", (userId) => {
+      console.log(`screen is sharing by the ${userId}`);
+      setPlayers((prev) => {
+        const copy = cloneDeep(prev);
+        if (copy[userId]) {
+          copy[userId].screenurl = copy[userId].screenurl
+            ? screenShare
+            : undefined;
+        } else {
+          console.error(`User ${userId} not found in players playing with url`);
+        }
+        return { ...copy };
+      });
+    });
     socket.on("leave-room", (userId) => {
       console.log(`user ${userId} is leaving the room`);
       users[userId]?.close();
@@ -143,14 +185,15 @@ const Meet = () => {
       socket.off("toggle-video");
       socket.off("leave-room");
     };
-  }, [players, setPlayers, socket, users]);
+  }, [mediaStream, players, screenShare, setPlayers, socket, users]);
 
   return (
-    <main className="relative flex gap-4 flex-col">
+    <main className="relative flex gap-4 flex-col overflow-hidden h-screen">
       <div className="w-[80vw] h-[80vh]">
         {highlightedPlayers && (
           <Player
             url={highlightedPlayers.url}
+            screenurl={highlightedPlayers.screenurl}
             muted={highlightedPlayers.muted}
             playing={highlightedPlayers.playing}
             Active
@@ -159,11 +202,13 @@ const Meet = () => {
       </div>
       <div className="absolute w-[300px] top-0 right-0 flex flex-col items-center justify-center rounded-sm">
         {Object.keys(nonHighlightedPlayers).map((playerId) => {
-          const { url, muted, playing } = nonHighlightedPlayers[playerId];
+          const { url, screenurl, muted, playing } =
+            nonHighlightedPlayers[playerId];
           return (
             <Player
               key={playerId}
               url={url}
+              screenurl={screenurl}
               muted={muted}
               playing={playing}
               Active={false}
@@ -176,9 +221,11 @@ const Meet = () => {
         <Footer
           muted={highlightedPlayers?.muted}
           playing={highlightedPlayers?.playing}
+          screenurl={highlightedPlayers?.screenurl}
           toggleAudio={toggleAudio}
           toggleVideo={toggleVideo}
           leaveRoom={leaveRoom}
+          screenSharing={screenSharing}
           visibleAudioOn={visibleAudioOn}
           visibleAudioOff={visibleAudioOff}
           showChat={showChat}
