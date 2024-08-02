@@ -36,6 +36,10 @@ io.on("connection", (socket) => {
     socket.join(url);
     socket.to(url).emit("leave-room", userId);
   });
+  socket.on("screen-share", (url, userId) => {
+    socket.join(url);
+    socket.to(url).emit("screen-share", userId);
+  });
 });
 
 app.get("/room-id", (req, res) => {
