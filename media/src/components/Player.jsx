@@ -1,7 +1,7 @@
 import ReactPlayer from "react-player";
 import { UserRound, Mic, MicOff } from "lucide-react";
 // eslint-disable-next-line react/prop-types
-const Player = ({ url, screenurl, muted, playing, Active }) => {
+const Player = ({ url, muted, playing, Active }) => {
   return (
     <div className="relative">
       {playing ? (
@@ -11,7 +11,6 @@ const Player = ({ url, screenurl, muted, playing, Active }) => {
         >
           <ReactPlayer
             url={url}
-            screenurl={screenurl}
             muted={muted}
             playing={playing}
             width={Active ? "80vw" : "auto"}

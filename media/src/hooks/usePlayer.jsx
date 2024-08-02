@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cloneDeep } from "lodash";
 import { useSocket } from "../context/socket";
 import { useNavigate, useParams } from "react-router-dom";
@@ -15,6 +15,12 @@ const usePlayer = (peerId, peer) => {
   const highlightedPlayers = playersClone[peerId];
   delete playersClone[peerId];
   const nonHighlightedPlayers = playersClone;
+
+  //  ----- for reference -------
+  // console.log("peerId", peerId);
+  // console.log("highlightedPlayers", highlightedPlayers);
+  // console.log("nonHighlightedPlayers", nonHighlightedPlayers);
+  // console.log("players", players);
 
   const leaveRoom = () => {
     socket.emit("leave-room", roomId, peerId);
@@ -57,6 +63,7 @@ const usePlayer = (peerId, peer) => {
   };
 
   const screenSharing = () => {
+    console.log("toggled the screenshare button");
     const constraints = {
       audio: true,
       video: { mediaSource: "screen" },
@@ -64,54 +71,24 @@ const usePlayer = (peerId, peer) => {
     navigator.mediaDevices
       .getDisplayMedia(constraints)
       .then((stream) => {
-        console.log("streaming:", stream);
+        console.log("ScreenSharing:", stream);
         setScreenShare(stream);
       })
       .catch((error) => {
         console.log("error in the screen sharing", error);
       });
-    console.log("toggled the screenshare button");
-    setPlayers((prev) => {
-      const copy = cloneDeep(prev);
-      copy[peerId].screenurl = copy[peerId].screenurl ? screenShare : undefined;
-      return { ...copy };
-    });
-    // if (nonHighlightedPlayers) {
-    //   console.log("screen sharing:", nonHighlightedPlayers);
-    //   const call = peer.call(nonHighlightedPlayers, screenShare);
-    //   call?.on("stream", (incomingStream) => {
-    //     console.log(`incoming stream from ${peerId}`);
-    //     setPlayers((prev) => {
-    //       const copy = cloneDeep(prev);
-    //       copy[nonHighlightedPlayers] = {
-    //         url: incomingStream,
-    //         muted: true,
-    //         playing: true,
-    //       };
-    //       return { ...copy };
-    //     });
-    //   });
-    // } else {
-    //   console.error(`User not found with peerid ${nonHighlightedPlayers} `);
-    // }
-
-    // peer.on("call", (call) => {
-    //   const { peer: peerId } = call;
-    //   call.answer(screenShare);
-    //   call.on("stream", (incomingStream) => {
-    //     console.log(`incoming stream from ${peerId}`);
-    //     setPlayers((prev) => ({
-    //       ...prev,
-    //       [peerId]: {
-    //         url: incomingStream,
-    //         muted: true,
-    //         playing: true,
-    //       },
-    //     }));
-    //   });
-    // });
-    socket.emit("screen-share", roomId, peerId);
   };
+  useEffect(() => {
+    if (!socket) return;
+    if (!screenShare)
+      setPlayers((prev) => {
+        const copy = cloneDeep(prev);
+        // copy[peerId].url = copy[peerId].url ? screenShare : undefined;
+        console.log("hi", screenShare);
+        return { ...copy };
+      });
+    socket.emit("screen-share", roomId, peerId);
+  }, [peerId, roomId, screenShare, socket]);
   return {
     players,
     setPlayers,

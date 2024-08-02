@@ -49,6 +49,7 @@ const Meet = () => {
     socket.on("userConnected", (newuser) => {
       console.log("new user connected", newuser);
       const call = peer.call(newuser, mediaStream);
+      console.log(mediaStream);
       call.on("stream", (incomingStream) => {
         console.log(`incoming stream from ${newuser}`);
         setPlayers((prev) => ({
@@ -59,26 +60,27 @@ const Meet = () => {
             playing: true,
           },
         }));
-        console.log(screenShare);
-        if (screenShare) {
-          const call = peer.call(newuser, screenShare);
-          call?.on("stream", (incomingStream) => {
-            console.log(`incoming screen sharing from ${newuser}`);
-            setPlayers((prev) => ({
-              ...prev,
-              [newuser]: {
-                screenurl: incomingStream,
-                muted: true,
-                playing: true,
-              },
-            }));
-          });
-        }
+
         setUsers((prev) => ({
           ...prev,
           [newuser]: call,
         }));
       });
+      console.log("my screen sharing", screenShare);
+      if (screenShare) {
+        const screenCall = peer.call(newuser, screenShare);
+        screenCall.on("stream", (incomingStream) => {
+          console.log(`incoming screen sharing from ${newuser}`);
+          setPlayers((prev) => ({
+            ...prev,
+            [`${newuser}-screenId`]: {
+              url: incomingStream,
+              muted: true,
+              playing: true,
+            },
+          }));
+        });
+      }
     });
     return () => {
       socket.off("userConnected");
@@ -90,6 +92,7 @@ const Meet = () => {
     peer.on("call", (call) => {
       const { peer: callerId } = call;
       call.answer(mediaStream);
+      console.log("yours media stream", mediaStream);
       call.on("stream", (incomingStream) => {
         console.log(`incoming stream from ${callerId}`);
         setPlayers((prev) => ({
@@ -100,33 +103,50 @@ const Meet = () => {
             playing: true,
           },
         }));
-        console.log(screenShare);
-        if (screenShare) call.answer(screenShare);
-        call.on("stream", (incomingStream) => {
-          console.log(`incoming screen sharing from ${callerId}`);
+        setUsers((prev) => ({
+          ...prev,
+          [callerId]: call,
+        }));
+      });
+    });
+    console.log("yours screen share", screenShare);
+    if (screenShare) {
+      peer.on("call", (screenCall) => {
+        const { peer: screenId } = screenCall;
+        console.log("screenId", screenId);
+        screenCall.answer();
+        screenCall.on("stream", (incomingStream) => {
+          console.log(`incoming screen sharing from ${screenId}`);
           setPlayers((prev) => ({
             ...prev,
-            [callerId]: {
-              screenurl: incomingStream,
+            [screenId]: {
+              url: incomingStream,
               muted: true,
               playing: true,
             },
           }));
-          setUsers((prev) => ({
-            ...prev,
-            [callerId]: call,
-          }));
         });
       });
-    });
+    }
   }, [mediaStream, peer, screenShare, setPlayers]);
+
+  useEffect(() => {
+    if (screenShare && peerId)
+      setPlayers((prev) => ({
+        ...prev,
+        [peerId]: {
+          url: screenShare,
+          muted: true,
+          playing: true,
+        },
+      }));
+  }, [peerId, screenShare, setPlayers]);
 
   useEffect(() => {
     if (!mediaStream || !peerId) return;
     setPlayers((prev) => ({
       ...prev,
       [peerId]: {
-        screenurl: screenShare,
         url: mediaStream,
         muted: true,
         playing: true,
@@ -165,9 +185,7 @@ const Meet = () => {
       setPlayers((prev) => {
         const copy = cloneDeep(prev);
         if (copy[userId]) {
-          copy[userId].screenurl = copy[userId].screenurl
-            ? screenShare
-            : undefined;
+          copy[userId].url = copy[userId].url ? screenShare : undefined;
         } else {
           console.error(`User ${userId} not found in players playing with url`);
         }
@@ -194,7 +212,7 @@ const Meet = () => {
         {highlightedPlayers && (
           <Player
             url={highlightedPlayers.url}
-            screenurl={highlightedPlayers.screenurl}
+            // screenurl={highlightedPlayers.screenurl}
             muted={highlightedPlayers.muted}
             playing={highlightedPlayers.playing}
             Active
@@ -203,13 +221,11 @@ const Meet = () => {
       </div>
       <div className="absolute w-[300px] top-0 right-0 flex flex-col items-center justify-center rounded-sm">
         {Object.keys(nonHighlightedPlayers).map((playerId) => {
-          const { url, screenurl, muted, playing } =
-            nonHighlightedPlayers[playerId];
+          const { url, muted, playing } = nonHighlightedPlayers[playerId];
           return (
             <Player
               key={playerId}
               url={url}
-              screenurl={screenurl}
               muted={muted}
               playing={playing}
               Active={false}
@@ -222,7 +238,6 @@ const Meet = () => {
         <Footer
           muted={highlightedPlayers?.muted}
           playing={highlightedPlayers?.playing}
-          screenurl={highlightedPlayers?.screenurl}
           toggleAudio={toggleAudio}
           toggleVideo={toggleVideo}
           leaveRoom={leaveRoom}
